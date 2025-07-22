@@ -14,8 +14,53 @@ if (!defined("__THEME_VERSION__")) {
 // define('__TYPECHO_GRAVATAR_PREFIX__', 'https://cravatar.cn/avatar/');
 
 //icefox 核心包
-include_once 'core/core.php';
+include_once 'core/optimized-core.php';
+include_once 'core/api-handler.php';
+include_once 'core/ssr-optimizer.php';
+include_once 'core/image-optimizer.php';
 
+// 主题初始化
+function themeInit($archive) {
+    // API 路由处理
+    $pathInfo = $archive->request->getPathInfo();
+    if (strpos($pathInfo, '/api/') === 0) {
+        $apiHandler = new IcefoxApiHandler($archive);
+        $apiHandler->handleRoute();
+        return;
+    } 
+
+    
+/* 强制用户关闭反垃圾保护 */
+Helper::options()->commentsAntiSpam = false;
+/* 强制用户关闭检查来源URL */
+Helper::options()->commentsCheckReferer = false;
+/* 强制用户强制要求填写邮箱 */
+ Helper::options()->commentsRequireMail = true;
+/* 强制用户强制要求无需填写url */
+Helper::options()->commentsRequireURL = false;
+Helper::options()->commentsMaxNestingLevels = '5'; //最大嵌套层数
+Helper::options()->commentsOrder = 'DESC'; //将最新的评论展示在前
+Helper::options()->commentsHTMLTagAllowed = '<a href=""> <img src=""> <img src="" class=""> <code> <del>';
+
+
+    /* 主题开放API 路由规则 */
+    // if ($isPost) {
+    //     switch ($route) {
+    //         case '/api/comment':
+    //             addComment($archive);
+    //             break;
+    //         case '/api/like':
+    //             addAgree($archive);
+    //             break;
+    //     }
+    // }
+
+    // switch ($route) {
+    //     case '/api/music':
+    //         getMusicUrl($self);
+    //         break;
+    // }
+}
 function themeConfig($form)
 {
     ?>
@@ -247,10 +292,6 @@ function themeConfig($form)
                 $css->setAttribute('class', 'icefox-content icefox-global');
                 $form->addInput($css);
                 $form->setAttribute('class', 'icefox-config-form');
-
-                ?>
-    <?php
-
 
 }
 
